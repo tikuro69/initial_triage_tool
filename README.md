@@ -75,7 +75,7 @@ Prepare an `envs.json` file like this:
     "web": "Apache",
     "app": "PHP",
     "db": "MySQL",
-    "control_panel": "Plesk",
+    "control_panel": "cPanel",
     "role": "Shared Web hosting",
     "notes": "multiple domains, access/error logs available"
   }
