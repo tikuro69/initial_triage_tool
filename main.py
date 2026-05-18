@@ -255,46 +255,79 @@ def build_summary(symptom, symptom_text, env, commands, run_id):
     return "\n".join(lines) + "\n"
 
 
-def build_prompt(symptom, symptom_text, env, commands):
+def read_text(path):
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read().rstrip()
+    except FileNotFoundError:
+        return "(file not found)"
+
+
+def build_ai_prompt(symptom, symptom_text, env, commands, summary, raw_dir):
     purpose_map = {
         "high_load": "I want to identify likely causes of high load and perform initial triage.",
         "web_504": "I want to identify likely causes of 504 errors and perform initial triage.",
         "other": "I want to identify likely causes of this issue and determine what should be checked next.",
     }
 
-    file_list = "\n".join([f"- {name}" for name in commands.keys()])
+    timestamp = datetime.now().isoformat(timespec="seconds")
+    hostname = read_text(raw_dir / "hostname.txt")
 
-    return f"""You are an assistant helping with Linux/Web server incident investigation.
-Please analyze the following initial triage data and respond concisely in English.
+    lines = [
+        "# Initial Triage Prompt",
+        "",
+        "## Purpose",
+        "",
+        "This file is prepared for AI-assisted Linux server incident triage.",
+        "The AI should not assume direct control of the server.",
+        "The goal is to help a human operator review evidence, understand possible causes, and decide safe next steps.",
+        "",
+        "## Incident Context",
+        "",
+        f"- Symptom: {symptom_text}",
+        f"- Timestamp: {timestamp}",
+        f"- Hostname: {hostname}",
+        "- Tool: initial_triage_tool",
+        "",
+        "## Investigation Goal",
+        "",
+        purpose_map.get(symptom, "I want to perform initial triage."),
+        "",
+        "## Request",
+        "",
+        "- List up to 3 likely causes in priority order.",
+        "- Add a short reason for each cause.",
+        "- Suggest additional logs or commands to check.",
+        "- Show the next investigation steps in order.",
+        "- End with a short 2-3 line summary for reporting.",
+        "",
+        "## Summary",
+        "",
+        "```text",
+        summary.rstrip(),
+        "```",
+        "",
+        "## Collected Evidence",
+        "",
+    ]
 
-[Symptom]
-{symptom_text}
+    for filename in commands.keys():
+        content = read_text(raw_dir / filename)
+        title = Path(filename).stem
+        lines.extend(
+            [
+                f"### {title}",
+                "",
+                f"Source: `raw/{filename}`",
+                "",
+                "````text",
+                content,
+                "````",
+                "",
+            ]
+        )
 
-[Purpose]
-{purpose_map.get(symptom, "I want to perform initial triage.")}
-
-[Environment]
-- OS: {env.get('os', '')}
-- Web server: {env.get('web', '')}
-- App / Runtime: {env.get('app', '')}
-- DB: {env.get('db', '')}
-- Control panel: {env.get('control_panel', '')}
-- Role: {env.get('role', '')}
-- Notes: {env.get('notes', '')}
-
-[Collected files]
-{file_list}
-
-[Request]
-- List up to 3 likely causes in priority order
-- Add a short reason for each cause
-- Suggest additional logs or commands to check
-- Show the next investigation steps in order
-- End with a short 2-3 line summary for reporting
-
-[How to use]
-Provide the contents of the txt files in this run directory together with this prompt.
-"""
+    return "\n".join(lines)
 
 
 def save_text(path, content):
@@ -354,14 +387,14 @@ def cmd_run(symptom=None):
         save_text(raw_dir / filename, output + "\n")
 
     summary = build_summary(symptom, symptom_text, env, commands, run_id)
-    prompt = build_prompt(symptom, symptom_text, env, commands)
+    ai_prompt = build_ai_prompt(symptom, symptom_text, env, commands, summary, raw_dir)
 
     save_text(run_dir / "summary.txt", summary)
-    save_text(run_dir / "prompt.txt", prompt)
+    save_text(run_dir / "ai_prompt.md", ai_prompt)
 
     print("\nDone.")
     print(f"Saved summary: {run_dir / 'summary.txt'}")
-    print(f"Saved prompt : {run_dir / 'prompt.txt'}")
+    print(f"Saved AI prompt: {run_dir / 'ai_prompt.md'}")
     print(f"Saved raw data: {raw_dir}")
 
 

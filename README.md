@@ -3,7 +3,7 @@
 A small Python CLI tool for collecting baseline system information during the initial stage of incident investigation.
 
 This tool is designed for the **first look** of a problem, not for full diagnosis.  
-It collects basic read-only system information, saves the results with a timestamp, and generates a prompt file that can be passed to AI for the next step of investigation.
+It collects basic read-only system information, saves the results with a timestamp, and generates a Markdown prompt file that can be passed to AI for the next step of investigation.
 
 ## Features
 
@@ -11,7 +11,7 @@ It collects basic read-only system information, saves the results with a timesta
 - Saves outputs under a timestamped run directory
 - Generates:
   - `summary.txt`
-  - `prompt.txt`
+  - `ai_prompt.md`
   - raw command outputs in `raw/`
 - Supports predefined incident types:
   - `high_load`
@@ -49,7 +49,7 @@ initial_triage_tool/
 runs/
 └─ web_504_2026-04-03_11-47-05/
    ├─ summary.txt
-   ├─ prompt.txt
+   ├─ ai_prompt.md
    └─ raw/
       ├─ date.txt
       ├─ hostname.txt
@@ -151,9 +151,16 @@ Contains:
 * recommended review order
 * review notes
 
-### `prompt.txt`
+### `ai_prompt.md`
 
-Contains an English prompt you can pass to AI together with the collected raw files.
+Contains a Markdown prompt you can paste directly into AI.
+
+It includes:
+
+* purpose and safety context
+* incident context such as symptom, timestamp, and hostname
+* the same summary content as `summary.txt`
+* collected raw evidence embedded as Markdown code blocks
 
 ### `raw/`
 
@@ -179,15 +186,15 @@ Contains the raw output of each command.
 1. Run the tool
 2. Check `summary.txt`
 3. Review the files listed in the recommended order
-4. Open `prompt.txt`
-5. Send the prompt and selected raw outputs to AI
+4. Open `ai_prompt.md`
+5. Paste the Markdown content into AI
 6. Continue investigation based on AI suggestions
 
 ## Future Ideas
 
 * configurable log paths via `envs.json`
 * additional incident types
-* output bundling into a single AI input file
+* more incident-specific Markdown prompt templates
 * richer environment profiles
 
 ## License
