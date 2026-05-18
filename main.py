@@ -300,6 +300,10 @@ def build_ai_prompt(symptom, symptom_text, env, commands, summary, raw_dir):
         "- Suggest additional logs or commands to check.",
         "- Show the next investigation steps in order.",
         "- End with a short 2-3 line summary for reporting.",
+        "-Clearly separate facts, assumptions, and recommendations.",
+        "- Prefer safe, read-only investigation steps first.",
+        "- List actions that should NOT be taken yet.",
+        "- Do not invent facts that are not present in the evidence.",
         "",
         "## Summary",
         "",
@@ -387,7 +391,8 @@ def cmd_run(symptom=None):
         save_text(raw_dir / filename, output + "\n")
 
     summary = build_summary(symptom, symptom_text, env, commands, run_id)
-    ai_prompt = build_ai_prompt(symptom, symptom_text, env, commands, summary, raw_dir)
+    ai_prompt = build_ai_prompt(
+        symptom, symptom_text, env, commands, summary, raw_dir)
 
     save_text(run_dir / "summary.txt", summary)
     save_text(run_dir / "ai_prompt.md", ai_prompt)
@@ -407,7 +412,8 @@ def main():
     env_sub.add_parser("list", help="list environments")
 
     run_parser = subparsers.add_parser("run", help="run initial triage")
-    run_parser.add_argument("symptom", nargs="?", choices=list(SUPPORTED_SYMPTOMS.keys()))
+    run_parser.add_argument("symptom", nargs="?",
+                            choices=list(SUPPORTED_SYMPTOMS.keys()))
 
     args = parser.parse_args()
 

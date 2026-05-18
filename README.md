@@ -1,6 +1,7 @@
 # initial_triage_tool
 
 A small Python CLI tool for collecting baseline system information during the initial stage of incident investigation.
+It helps human operators prepare structured evidence for AI-assisted investigation without allowing AI to operate the server directly.
 
 This tool is designed for the **first look** of a problem, not for full diagnosis.  
 It collects basic read-only system information, saves the results with a timestamp, and generates a Markdown prompt file that can be passed to AI for the next step of investigation.
