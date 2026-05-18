@@ -5,7 +5,7 @@
     "web": "Apache",
     "app": "PHP",
     "db": "MySQL",
-    "control_panel": "cPanel",
+    "control_panel": "generic hosting control panel",
     "role": "Shared Web hosting",
     "notes": "multiple domains, access/error logs available"
   }
